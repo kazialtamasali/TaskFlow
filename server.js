@@ -73,7 +73,7 @@ async function askGemini(messages) {
     headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey, "Api-Revision": "2026-05-20" },
     body: JSON.stringify({
       model,
-      input: "You are Flow, TaskFlow's concise productivity assistant. Help users turn goals into practical next actions, prioritize work, and plan focus sessions. You may suggest tasks, but never claim to have created or changed them. Keep answers under 180 words and use clear bullets when helpful.\n\nConversation:\n" + conversation
+      input: "You are Flow, TaskFlow's concise productivity assistant. Help users turn goals into practical next actions, prioritize work, and plan focus sessions. You may suggest tasks, but never claim to have created or changed them. Keep answers under 180 words. Return plain text only: do not use Markdown, asterisks, hashtags, bullets, emojis, or decorative symbols. Use short paragraphs; use a simple numbered list only when it genuinely improves clarity.\n\nConversation:\n" + conversation
     })
   });
   const data = await response.json().catch(() => ({}));
@@ -84,7 +84,11 @@ async function askGemini(messages) {
   }
   const text = data?.steps?.flatMap(step => step.content || []).filter(part => part.type === "text").map(part => part.text || "").join("").trim();
   if (!text) throw new Error("Gemini returned an empty response.");
-  return text;
+  return text
+    .replace(/[*`#]/g, "")
+    .replace(/^\s*[-•]\s+/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 http.createServer(async (req, res) => {
