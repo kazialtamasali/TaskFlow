@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TaskFlow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#faf8f3; --surface:#ffffff; --ink:#211f2e; --ink-soft:#726f85; --line:#e7e2d4;
+    --accent:#f2a541; --accent-ink:#211f2e; --done:#6b9080; --done-soft:#e3ede8; --danger:#c65b4e;
+    --shadow:0 1px 2px rgba(33,31,46,.04), 0 8px 24px rgba(33,31,46,.06);
+    color-scheme:light;
+  }
+  body.dark{
+    --bg:#15141c; --surface:#1d1c26; --ink:#f1efe6; --ink-soft:#948f9e; --line:#312f3d;
+    --accent:#f6b860; --accent-ink:#15141c; --done:#7fb69a; --done-soft:#233128; --danger:#e08477;
+    --shadow:0 1px 2px rgba(0,0,0,.2), 0 8px 24px rgba(0,0,0,.3);
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    display:flex; justify-content:center; padding:56px 18px;
+    transition:background .2s ease, color .2s ease;
+  }
+  .card{width:100%; max-width:480px;}
+
+  .top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:28px; gap:12px;}
+  .date{font-size:.78rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 4px;}
+  h1{margin:0; font-family:'Fraunces',serif; font-weight:600; font-size:2rem; letter-spacing:-.01em;}
+  .theme-toggle{
+    width:38px; height:38px; border:none; border-radius:50%; background:var(--surface); box-shadow:var(--shadow);
+    cursor:pointer; font-size:1rem; display:grid; place-items:center; color:var(--ink); flex:none;
+    transition:transform .15s ease;
+  }
+  .theme-toggle:hover{transform:scale(1.06);}
+  .theme-toggle:active{transform:scale(.94);}
+
+  .add-row{
+    display:flex; gap:10px; margin-bottom:22px; background:var(--surface); border-radius:14px;
+    box-shadow:var(--shadow); padding:6px; align-items:center;
+  }
+  .add-row input{
+    flex:1; border:none; background:transparent; font:inherit; font-size:1rem; color:var(--ink);
+    padding:12px 10px; outline:none;
+  }
+  .add-row input::placeholder{color:var(--ink-soft);}
+  .add-btn{
+    flex:none; width:42px; height:42px; border:none; border-radius:10px; background:var(--accent);
+    color:var(--accent-ink); font-size:1.3rem; font-weight:700; cursor:pointer; display:grid; place-items:center;
+    transition:transform .15s ease, opacity .15s ease;
+  }
+  .add-btn:hover{transform:translateY(-1px);}
+  .add-btn:active{transform:translateY(0);}
+  .add-btn:disabled{opacity:.4; cursor:default; transform:none;}
+
+  ul.list{list-style:none; margin:0 0 16px; padding:0; display:grid; gap:8px;}
+  li.item{
+    display:flex; align-items:flex-start; gap:12px; background:var(--surface); border-radius:12px;
+    box-shadow:var(--shadow); padding:13px 14px; transition:opacity .2s ease, transform .15s ease;
+  }
+  li.item.dragging{opacity:.4;}
+  li.item.over{transform:translateY(2px);}
+
+  .drag-handle{
+    flex:none; width:16px; padding-top:3px; cursor:grab; color:var(--ink-soft); opacity:.5; user-select:none;
+    font-size:.9rem; line-height:1; letter-spacing:1px;
+  }
+  li.item:hover .drag-handle{opacity:.9;}
+
+  .check{
+    flex:none; width:22px; height:22px; margin-top:1px; border-radius:6px; border:2px solid var(--line);
+    background:transparent; cursor:pointer; display:grid; place-items:center; padding:0;
+  }
+  .check svg{width:13px; height:13px; opacity:0; transform:scale(.6); transition:opacity .15s ease, transform .15s ease;}
+  .check svg path{
+    fill:none; stroke:var(--accent-ink); stroke-width:3; stroke-linecap:round; stroke-linejoin:round;
+    stroke-dasharray:20; stroke-dashoffset:20;
+  }
+  li.item.done .check{background:var(--done); border-color:var(--done);}
+  li.item.done .check svg{opacity:1; transform:scale(1);}
+  li.item.done .check svg path{animation:draw .28s ease forwards;}
+  @keyframes draw{ to{ stroke-dashoffset:0; } }
+
+  .item-body{flex:1; min-width:0;}
+  .item-text{
+    font-size:.98rem; line-height:1.4; word-break:break-word; outline:none; cursor:text;
+  }
+  li.item.done .item-text{color:var(--ink-soft); text-decoration:line-through; text-decoration-color:var(--ink-soft);}
+  .item-meta{font-size:.72rem; color:var(--ink-soft); margin-top:3px;}
+
+  .del-btn{
+    flex:none; width:28px; height:28px; border:none; background:transparent; color:var(--ink-soft);
+    cursor:pointer; border-radius:6px; font-size:1rem; opacity:0; transition:opacity .15s ease, color .15s ease, background .15s ease;
+  }
+  li.item:hover .del-btn{opacity:1;}
+  .del-btn:hover{color:var(--danger); background:color-mix(in srgb, var(--danger) 12%, transparent);}
+
+  .empty{
+    text-align:center; padding:40px 18px; color:var(--ink-soft); background:var(--surface); border-radius:12px;
+    box-shadow:var(--shadow); font-size:.92rem;
+  }
+  .empty b{display:block; font-family:'Fraunces',serif; font-size:1.1rem; color:var(--ink); font-weight:600; margin-bottom:4px;}
+
+  .footer{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    font-size:.82rem; color:var(--ink-soft);
+  }
+  .count{font-family:'JetBrains Mono',monospace; font-weight:600; font-size:.78rem;}
+  .filters{display:flex; gap:4px; background:var(--surface); border-radius:10px; padding:3px; box-shadow:var(--shadow);}
+  .filters button{
+    border:none; background:transparent; color:var(--ink-soft); font:inherit; font-size:.78rem; font-weight:600;
+    padding:6px 12px; border-radius:8px; cursor:pointer; transition:background .15s ease, color .15s ease;
+  }
+  .filters button.active{background:var(--accent); color:var(--accent-ink);}
+  .clear-btn{border:none; background:transparent; color:var(--ink-soft); font:inherit; font-size:.78rem; cursor:pointer; text-decoration:underline; text-underline-offset:2px;}
+  .clear-btn:hover{color:var(--danger);}
+  .clear-btn:disabled{opacity:.4; cursor:default; text-decoration:none;}
+
+  .assistant-panel{margin-top:22px; background:var(--surface); border-radius:14px; box-shadow:var(--shadow); overflow:hidden;}
+  .assistant-head{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px 10px;}
+  .assistant-title{margin:0; font-family:'Fraunces',serif; font-size:1.12rem; font-weight:600;}
+  .assistant-badge{font:600 .67rem 'JetBrains Mono',monospace; letter-spacing:.05em; text-transform:uppercase; color:var(--done); background:var(--done-soft); border-radius:999px; padding:4px 7px;}
+  .chat-log{max-height:260px; overflow:auto; padding:4px 14px 12px; display:grid; gap:9px;}
+  .chat-message{max-width:90%; padding:9px 11px; border-radius:10px; font-size:.84rem; line-height:1.45; white-space:pre-wrap;}
+  .chat-message.assistant{background:var(--bg); color:var(--ink); justify-self:start;}
+  .chat-message.user{background:var(--accent); color:var(--accent-ink); justify-self:end;}
+  .chat-message.error{background:color-mix(in srgb, var(--danger) 12%, transparent); color:var(--danger); justify-self:start;}
+  .chat-compose{border-top:1px solid var(--line); display:flex; gap:8px; padding:9px; align-items:flex-end;}
+  .chat-input{resize:none; min-height:40px; max-height:100px; flex:1; border:1px solid var(--line); border-radius:9px; background:transparent; color:var(--ink); font:inherit; font-size:.84rem; padding:9px; outline:none;}
+  .chat-input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);}
+  .chat-send{height:40px; border:0; border-radius:9px; padding:0 13px; background:var(--accent); color:var(--accent-ink); cursor:pointer; font:600 .8rem 'Inter',sans-serif;}
+  .chat-send:disabled{opacity:.45; cursor:default;}
+
+  @media (max-width:420px){
+    body{padding:34px 14px;}
+    h1{font-size:1.6rem;}
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="top">
+    <div>
+      <p class="date" id="dateLine"></p>
+      <h1>TaskFlow</h1>
+    </div>
+    <button class="theme-toggle" id="themeToggle" type="button" title="Toggle theme">🌙</button>
+  </div>
+
+  <div class="add-row">
+    <input type="text" id="newInput" placeholder="Add a task..." maxlength="200">
+    <button class="add-btn" id="addBtn" type="button" disabled>＋</button>
+  </div>
+
+  <ul class="list" id="list"></ul>
+  <div class="empty" id="emptyState" style="display:none;"></div>
+
+  <div class="footer">
+    <span class="count" id="countLabel">0 left</span>
+    <div class="filters" id="filters">
+      <button data-filter="all" class="active" type="button">All</button>
+      <button data-filter="active" type="button">Active</button>
+      <button data-filter="done" type="button">Done</button>
+    </div>
+    <button class="clear-btn" id="clearDone" type="button">Clear done</button>
+  </div>
+  <section class="assistant-panel" aria-labelledby="assistantTitle">
+    <div class="assistant-head">
+      <h2 class="assistant-title" id="assistantTitle">Flow Assistant</h2>
+      <span class="assistant-badge">Gemini</span>
+    </div>
+    <div class="chat-log" id="chatLog" role="log" aria-live="polite">
+      <div class="chat-message assistant">Tell me what you need to get done and I’ll help you break it into focused next steps.</div>
+    </div>
+    <form class="chat-compose" id="chatForm">
+      <textarea class="chat-input" id="chatInput" rows="1" maxlength="2000" placeholder="e.g. Help me plan my study session" aria-label="Message Flow Assistant"></textarea>
+      <button class="chat-send" id="chatSend" type="submit">Send</button>
+    </form>
+  </section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const list = document.getElementById("list");
+  const newInput = document.getElementById("newInput");
+  const addBtn = document.getElementById("addBtn");
+  const emptyState = document.getElementById("emptyState");
+  const countLabel = document.getElementById("countLabel");
+  const clearDone = document.getElementById("clearDone");
+  const filtersBox = document.getElementById("filters");
+  const themeToggle = document.getElementById("themeToggle");
+  const dateLine = document.getElementById("dateLine");
+  const chatForm = document.getElementById("chatForm");
+  const chatInput = document.getElementById("chatInput");
+  const chatLog = document.getElementById("chatLog");
+  const chatSend = document.getElementById("chatSend");
+
+  let items = [];
+  let filter = "all";
+  let theme = "light";
+  let dragId = null;
+  let chatMessages = [];
+
+  dateLine.textContent = new Date().toLocaleDateString(undefined, { weekday:"long", month:"long", day:"numeric" });
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function escapeHtml(s){ const d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  async function storeGet(key, fallback){
+    try{
+      if(!window.storage) return JSON.parse(localStorage.getItem(key) || "null") ?? fallback;
+      const res = await window.storage.get(key, false);
+      if(res && typeof res.value === "string") return JSON.parse(res.value);
+      return fallback;
+    }catch(e){ return fallback; }
+  }
+  async function storeSet(key, value){
+    try{ if(!window.storage) localStorage.setItem(key, JSON.stringify(value)); else await window.storage.set(key, JSON.stringify(value), false); }
+    catch(e){ console.error("save failed", e); }
+  }
+
+  function addChatMessage(text, type){
+    const message = document.createElement("div");
+    message.className = `chat-message ${type}`;
+    message.textContent = text;
+    chatLog.appendChild(message);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return message;
+  }
+
+  chatForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const text = chatInput.value.trim();
+    if(!text || chatSend.disabled) return;
+    chatMessages.push({ role:"user", text });
+    addChatMessage(text, "user");
+    chatInput.value = "";
+    chatSend.disabled = true;
+    const pending = addChatMessage("Thinking…", "assistant");
+    try{
+      const response = await fetch("/api/chat", { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ messages:chatMessages }) });
+      const contentType = response.headers.get("content-type") || "";
+      const payload = contentType.includes("application/json") ? await response.json() : {};
+      if(!contentType.includes("application/json")) throw new Error("Chat needs the TaskFlow server. Run npm start, then open http://localhost:3000.");
+      if(!response.ok) throw new Error(payload.error || "The assistant is temporarily unavailable.");
+      pending.textContent = payload.reply;
+      chatMessages.push({ role:"model", text:payload.reply });
+      chatMessages = chatMessages.slice(-12);
+    }catch(error){
+      pending.className = "chat-message error";
+      pending.textContent = error.message === "Failed to fetch" ? "Chat needs the TaskFlow server. Run npm start, then open http://localhost:3000." : error.message;
+    }finally{ chatSend.disabled = false; chatInput.focus(); }
+  });
+
+  chatInput.addEventListener("keydown", event => {
+    if(event.key === "Enter" && !event.shiftKey){ event.preventDefault(); chatForm.requestSubmit(); }
+  });
+  async function persist(){ await storeSet("todo-items", items); }
+
+  function applyTheme(){
+    document.body.classList.toggle("dark", theme === "dark");
+    themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+  }
+  themeToggle.addEventListener("click", async () => {
+    theme = theme === "dark" ? "light" : "dark";
+    applyTheme();
+    await storeSet("todo-theme", theme);
+  });
+
+  function updateAddBtn(){ addBtn.disabled = newInput.value.trim().length === 0; }
+  newInput.addEventListener("input", updateAddBtn);
+  newInput.addEventListener("keydown", e => { if(e.key === "Enter") addItem(); });
+  addBtn.addEventListener("click", addItem);
+
+  async function addItem(){
+    const text = newInput.value.trim();
+    if(!text) return;
+    items.unshift({ id: uid(), text, done:false, createdAt: new Date().toISOString() });
+    newInput.value = "";
+    updateAddBtn();
+    await persist();
+    render();
+  }
+
+  async function toggleItem(id){
+    const it = items.find(x => x.id === id);
+    if(!it) return;
+    it.done = !it.done;
+    await persist();
+    render();
+  }
+
+  async function deleteItem(id){
+    items = items.filter(x => x.id !== id);
+    await persist();
+    render();
+  }
+
+  async function editItem(id, text){
+    const it = items.find(x => x.id === id);
+    if(!it) return;
+    const trimmed = text.trim();
+    if(!trimmed){ await deleteItem(id); return; }
+    it.text = trimmed;
+    await persist();
+  }
+
+  clearDone.addEventListener("click", async () => {
+    if(!items.some(x => x.done)) return;
+    items = items.filter(x => !x.done);
+    await persist();
+    render();
+  });
+
+  filtersBox.addEventListener("click", e => {
+    const btn = e.target.closest("button[data-filter]");
+    if(!btn) return;
+    filter = btn.dataset.filter;
+    [...filtersBox.children].forEach(b => b.classList.toggle("active", b === btn));
+    render();
+  });
+
+  function visibleItems(){
+    if(filter === "active") return items.filter(x => !x.done);
+    if(filter === "done") return items.filter(x => x.done);
+    return items;
+  }
+
+  function render(){
+    const visible = visibleItems();
+    list.innerHTML = "";
+
+    if(visible.length === 0){
+      list.style.display = "none";
+      emptyState.style.display = "block";
+      if(items.length === 0){
+        emptyState.innerHTML = "<b>Nothing here yet</b>Add your first task above.";
+      } else if(filter === "done"){
+        emptyState.innerHTML = "<b>No completed tasks</b>Finished items will show up here.";
+      } else {
+        emptyState.innerHTML = "<b>All clear</b>Nothing active right now.";
+      }
+    } else {
+      list.style.display = "grid";
+      emptyState.style.display = "none";
+      visible.forEach(it => list.appendChild(renderItem(it)));
+    }
+
+    const leftCount = items.filter(x => !x.done).length;
+    countLabel.textContent = `${leftCount} ${leftCount === 1 ? "item" : "items"} left`;
+    clearDone.disabled = !items.some(x => x.done);
+  }
+
+  function renderItem(it){
+    const li = document.createElement("li");
+    li.className = "item" + (it.done ? " done" : "");
+    li.draggable = true;
+    li.dataset.id = it.id;
+
+    li.innerHTML = `
+      <span class="drag-handle">⋮⋮</span>
+      <button class="check" aria-label="Toggle complete">
+        <svg viewBox="0 0 16 16"><path d="M3 8.5 6.2 12 13 4"/></svg>
+      </button>
+      <div class="item-body">
+        <div class="item-text" contenteditable="true" spellcheck="false">${escapeHtml(it.text)}</div>
+      </div>
+      <button class="del-btn" aria-label="Delete task">✕</button>
+    `;
+
+    li.querySelector(".check").addEventListener("click", () => toggleItem(it.id));
+    li.querySelector(".del-btn").addEventListener("click", () => deleteItem(it.id));
+
+    const textEl = li.querySelector(".item-text");
+    textEl.addEventListener("keydown", e => {
+      if(e.key === "Enter"){ e.preventDefault(); textEl.blur(); }
+      if(e.key === "Escape"){ textEl.textContent = it.text; textEl.blur(); }
+    });
+    textEl.addEventListener("blur", () => editItem(it.id, textEl.textContent));
+
+    li.addEventListener("dragstart", () => { dragId = it.id; setTimeout(() => li.classList.add("dragging"), 0); });
+    li.addEventListener("dragend", () => { li.classList.remove("dragging"); dragId = null; });
+    li.addEventListener("dragover", e => { e.preventDefault(); li.classList.add("over"); });
+    li.addEventListener("dragleave", () => li.classList.remove("over"));
+    li.addEventListener("drop", async e => {
+      e.preventDefault();
+      li.classList.remove("over");
+      if(!dragId || dragId === it.id) return;
+      const fromIdx = items.findIndex(x => x.id === dragId);
+      const toIdx = items.findIndex(x => x.id === it.id);
+      if(fromIdx === -1 || toIdx === -1) return;
+      const [moved] = items.splice(fromIdx, 1);
+      items.splice(toIdx, 0, moved);
+      await persist();
+      render();
+    });
+
+    return li;
+  }
+
+  async function init(){
+    const [savedItems, savedTheme] = await Promise.all([
+      storeGet("todo-items", []),
+      storeGet("todo-theme", "light")
+    ]);
+    items = Array.isArray(savedItems) ? savedItems : [];
+    theme = savedTheme === "dark" ? "dark" : "light";
+    applyTheme();
+    render();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
