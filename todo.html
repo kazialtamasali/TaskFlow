@@ -295,8 +295,8 @@
           <input class="fb-input" id="fbName" type="text" placeholder="Your name" maxlength="100" required>
         </div>
         <div class="fb-field">
-          <label class="fb-label" for="fbEmail">Email</label>
-          <input class="fb-input" id="fbEmail" type="email" placeholder="you@example.com" maxlength="200" required>
+          <label class="fb-label" for="fbEmail">Email (optional)</label>
+          <input class="fb-input" id="fbEmail" type="email" placeholder="you@example.com" maxlength="200">
         </div>
       </div>
       <div class="fb-stars" id="fbStars">
@@ -361,7 +361,7 @@
   let fbRating = 0;
 
   function checkFbValid(){
-    fbSubmit.disabled = !(fbRating > 0 && fbName.value.trim() && fbEmail.value.trim());
+    fbSubmit.disabled = !(fbRating > 0 && fbName.value.trim());
   }
 
   function openFeedback(){
@@ -419,7 +419,7 @@
   const SHEET_URL = "https://script.google.com/macros/s/AKfycbwfspX0zPhuMi1gdy8PXE5Y0nKHGhZljqbdTw8FO8fdI46Ebd3k9cfRigLT28eTImGs/exec";
 
   fbSubmit.addEventListener("click", async () => {
-    if(fbRating === 0 || !fbName.value.trim() || !fbEmail.value.trim()) return;
+    if(fbRating === 0 || !fbName.value.trim()) return;
     if(SHEET_URL.includes("YOUR_DEPLOYMENT_ID")){
       alert("Please set your Google Sheets URL in todo.html (search for SHEET_URL).");
       return;

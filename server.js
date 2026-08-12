@@ -116,7 +116,7 @@ http.createServer(async (req, res) => {
     return sendJson(res, 200, { configured: Boolean(apiKey) });
   }
   if (req.method === "GET" && (req.url === "/" || req.url === "/todo.html")) {
-    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "X-Content-Type-Options": "nosniff" });
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "X-Content-Type-Options": "nosniff", "Cache-Control": "no-cache" });
     fs.createReadStream(pagePath).pipe(res);
     return;
   }
@@ -128,7 +128,7 @@ http.createServer(async (req, res) => {
       const rating = Number(payload.rating);
       const comment = (payload.comment || "").trim();
       if (!name || name.length > 100) return sendJson(res, 400, { error: "Name is required (max 100 chars)." });
-      if (!email || email.length > 200 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return sendJson(res, 400, { error: "A valid email is required." });
+      if (email && (email.length > 200 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) return sendJson(res, 400, { error: "If provided, a valid email is required." });
       if (!rating || rating < 1 || rating > 5) return sendJson(res, 400, { error: "Rating must be 1-5." });
       if (comment.length > 500) return sendJson(res, 400, { error: "Comment must be under 500 chars." });
       saveFeedback({ name, email, rating, comment });
