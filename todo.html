@@ -121,6 +121,98 @@
   .clear-btn:hover{color:var(--danger);}
   .clear-btn:disabled{opacity:.4; cursor:default; text-decoration:none;}
 
+  /* Feedback button */
+  .feedback-btn{
+    width:38px; height:38px; border:none; border-radius:50%; background:var(--surface); box-shadow:var(--shadow);
+    cursor:pointer; font-size:1rem; display:grid; place-items:center; color:var(--accent); flex:none;
+    transition:transform .15s ease, box-shadow .2s ease;
+  }
+  .feedback-btn:hover{transform:scale(1.06); box-shadow:0 2px 12px rgba(242,165,65,.25);}
+  .feedback-btn:active{transform:scale(.94);}
+
+  /* Modal overlay */
+  .fb-overlay{
+    position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.45); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    opacity:0; visibility:hidden; transition:opacity .25s ease, visibility .25s ease;
+  }
+  .fb-overlay.open{opacity:1; visibility:visible;}
+  .fb-overlay.open .fb-modal{transform:translateY(0) scale(1); opacity:1;}
+
+  .fb-modal{
+    width:92%; max-width:400px; background:var(--surface); border-radius:18px; box-shadow:0 8px 40px rgba(0,0,0,.18);
+    padding:28px 24px 22px; position:relative;
+    transform:translateY(16px) scale(.96); opacity:0; transition:transform .3s cubic-bezier(.22,1,.36,1), opacity .3s ease;
+  }
+  .fb-close{
+    position:absolute; top:14px; right:14px; width:30px; height:30px; border:none; background:transparent;
+    color:var(--ink-soft); font-size:1.15rem; cursor:pointer; border-radius:8px; display:grid; place-items:center;
+    transition:background .15s ease, color .15s ease;
+  }
+  .fb-close:hover{background:color-mix(in srgb, var(--danger) 12%, transparent); color:var(--danger);}
+
+  .fb-heading{
+    margin:0 0 4px; font-family:'Fraunces',serif; font-weight:600; font-size:1.25rem;
+  }
+  .fb-sub{margin:0 0 18px; font-size:.84rem; color:var(--ink-soft);}
+
+  /* Star rating */
+  .fb-stars{display:flex; gap:6px; margin-bottom:16px;}
+  .fb-star{
+    width:38px; height:38px; border:none; background:transparent; cursor:pointer; padding:0;
+    color:var(--line); font-size:1.6rem; transition:color .15s ease, transform .15s ease;
+    display:grid; place-items:center;
+  }
+  .fb-star.hovered{color:var(--accent); transform:scale(1.18);}
+  .fb-star.selected{color:var(--accent);}
+  .fb-star.selected.pulse{animation:starPop .35s ease;}
+  @keyframes starPop{
+    0%{transform:scale(1);} 50%{transform:scale(1.3);} 100%{transform:scale(1);}
+  }
+  .fb-label{font-size:.78rem; font-weight:600; color:var(--ink-soft); margin-bottom:6px; display:block; letter-spacing:.03em;}
+
+  .fb-input{
+    width:100%; height:42px; border:1px solid var(--line); border-radius:10px;
+    background:transparent; color:var(--ink); font:inherit; font-size:.88rem; padding:0 12px; outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease; margin-bottom:10px;
+  }
+  .fb-input:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);}
+  .fb-input::placeholder{color:var(--ink-soft);}
+
+  .fb-row{display:flex; gap:10px; margin-bottom:2px;}
+  .fb-row .fb-field{flex:1; min-width:0;}
+
+  .fb-textarea{
+    width:100%; min-height:80px; max-height:140px; resize:vertical; border:1px solid var(--line); border-radius:10px;
+    background:transparent; color:var(--ink); font:inherit; font-size:.88rem; padding:10px 12px; outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease; margin-bottom:18px;
+  }
+  .fb-textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);}
+  .fb-textarea::placeholder{color:var(--ink-soft);}
+
+  .fb-submit{
+    width:100%; height:44px; border:none; border-radius:10px; background:var(--accent); color:var(--accent-ink);
+    font:600 .92rem 'Inter',sans-serif; cursor:pointer; transition:transform .15s ease, opacity .15s ease;
+  }
+  .fb-submit:hover{transform:translateY(-1px);}
+  .fb-submit:active{transform:translateY(0);}
+  .fb-submit:disabled{opacity:.45; cursor:default; transform:none;}
+
+  .fb-thanks{display:none; text-align:center; padding:10px 0;}
+  .fb-thanks-icon{font-size:2.6rem; margin-bottom:8px; display:block; animation:starPop .5s ease;}
+  .fb-thanks-text{font-family:'Fraunces',serif; font-size:1.15rem; font-weight:600; margin:0 0 4px;}
+  .fb-thanks-sub{font-size:.84rem; color:var(--ink-soft); margin:0;}
+
+  /* Toast */
+  .fb-toast{
+    position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--done); color:#fff; font:600 .84rem 'Inter',sans-serif;
+    padding:10px 22px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,.2);
+    opacity:0; visibility:hidden; z-index:1100;
+    transition:opacity .3s ease, transform .3s ease, visibility .3s ease;
+  }
+  .fb-toast.show{opacity:1; visibility:visible; transform:translateX(-50%) translateY(0);}
+
   .assistant-panel{margin-top:22px; background:var(--surface); border-radius:14px; box-shadow:var(--shadow); overflow:hidden;}
   .assistant-head{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px 10px;}
   .assistant-title{margin:0; font-family:'Fraunces',serif; font-size:1.12rem; font-weight:600;}
@@ -140,6 +232,7 @@
   @media (max-width:420px){
     body{padding:34px 14px;}
     h1{font-size:1.6rem;}
+    .fb-modal{padding:22px 18px 18px;}
   }
 </style>
 </head>
@@ -150,7 +243,10 @@
       <p class="date" id="dateLine"></p>
       <h1>TaskFlow</h1>
     </div>
-    <button class="theme-toggle" id="themeToggle" type="button" title="Toggle theme">🌙</button>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button class="feedback-btn" id="feedbackBtn" type="button" title="Send feedback">✦</button>
+      <button class="theme-toggle" id="themeToggle" type="button" title="Toggle theme">🌙</button>
+    </div>
   </div>
 
   <div class="add-row">
@@ -186,6 +282,45 @@
   <footer class="site-footer">Made by Kazi Altamas Ali.</footer>
 </div>
 
+<!-- Feedback Modal -->
+<div class="fb-overlay" id="fbOverlay">
+  <div class="fb-modal" id="fbModal">
+    <button class="fb-close" id="fbClose" type="button" aria-label="Close feedback">✕</button>
+    <div id="fbFormView">
+      <h2 class="fb-heading">How's TaskFlow?</h2>
+      <p class="fb-sub">Your feedback helps us improve. Rate your experience below.</p>
+      <div class="fb-row">
+        <div class="fb-field">
+          <label class="fb-label" for="fbName">Name</label>
+          <input class="fb-input" id="fbName" type="text" placeholder="Your name" maxlength="100" required>
+        </div>
+        <div class="fb-field">
+          <label class="fb-label" for="fbEmail">Email</label>
+          <input class="fb-input" id="fbEmail" type="email" placeholder="you@example.com" maxlength="200" required>
+        </div>
+      </div>
+      <div class="fb-stars" id="fbStars">
+        <button class="fb-star" data-value="1" type="button" aria-label="1 star">★</button>
+        <button class="fb-star" data-value="2" type="button" aria-label="2 stars">★</button>
+        <button class="fb-star" data-value="3" type="button" aria-label="3 stars">★</button>
+        <button class="fb-star" data-value="4" type="button" aria-label="4 stars">★</button>
+        <button class="fb-star" data-value="5" type="button" aria-label="5 stars">★</button>
+      </div>
+      <label class="fb-label" for="fbText">Anything else? (optional)</label>
+      <textarea class="fb-textarea" id="fbText" placeholder="Tell us what you think..." maxlength="500"></textarea>
+      <button class="fb-submit" id="fbSubmit" type="button" disabled>Submit Feedback</button>
+    </div>
+    <div class="fb-thanks" id="fbThanks">
+      <span class="fb-thanks-icon">✦</span>
+      <p class="fb-thanks-text">Thank you!</p>
+      <p class="fb-thanks-sub">Your feedback has been saved.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="fb-toast" id="fbToast">Feedback submitted — thank you!</div>
+
 <script>
 (function(){
   "use strict";
@@ -209,6 +344,113 @@
   let theme = "light";
   let dragId = null;
   let chatMessages = [];
+
+  /* ── Feedback system ── */
+  const feedbackBtn = document.getElementById("feedbackBtn");
+  const fbOverlay = document.getElementById("fbOverlay");
+  const fbModal = document.getElementById("fbModal");
+  const fbClose = document.getElementById("fbClose");
+  const fbStars = document.getElementById("fbStars");
+  const fbText = document.getElementById("fbText");
+  const fbSubmit = document.getElementById("fbSubmit");
+  const fbFormView = document.getElementById("fbFormView");
+  const fbThanks = document.getElementById("fbThanks");
+  const fbToast = document.getElementById("fbToast");
+  const fbName = document.getElementById("fbName");
+  const fbEmail = document.getElementById("fbEmail");
+  let fbRating = 0;
+
+  function checkFbValid(){
+    fbSubmit.disabled = !(fbRating > 0 && fbName.value.trim() && fbEmail.value.trim());
+  }
+
+  function openFeedback(){
+    fbRating = 0;
+    fbName.value = "";
+    fbEmail.value = "";
+    fbText.value = "";
+    fbSubmit.disabled = true;
+    fbFormView.style.display = "block";
+    fbThanks.style.display = "none";
+    updateStarDisplay();
+    fbOverlay.classList.add("open");
+  }
+  function closeFeedback(){
+    fbOverlay.classList.remove("open");
+  }
+
+  feedbackBtn.addEventListener("click", openFeedback);
+  fbClose.addEventListener("click", closeFeedback);
+  fbOverlay.addEventListener("click", e => { if(e.target === fbOverlay) closeFeedback(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape" && fbOverlay.classList.contains("open")) closeFeedback(); });
+
+  function updateStarDisplay(hoverVal){
+    const starBtns = fbStars.querySelectorAll(".fb-star");
+    starBtns.forEach(btn => {
+      const v = Number(btn.dataset.value);
+      btn.classList.toggle("selected", v <= fbRating);
+      btn.classList.toggle("hovered", hoverVal != null && v <= hoverVal && v > fbRating);
+    });
+  }
+
+  fbStars.addEventListener("click", e => {
+    const btn = e.target.closest(".fb-star");
+    if(!btn) return;
+    fbRating = Number(btn.dataset.value);
+    checkFbValid();
+    updateStarDisplay();
+    // trigger pulse animation
+    fbStars.querySelectorAll(".fb-star.selected").forEach(s => {
+      s.classList.remove("pulse");
+      void s.offsetWidth; // reflow
+      s.classList.add("pulse");
+    });
+  });
+  fbStars.addEventListener("mouseover", e => {
+    const btn = e.target.closest(".fb-star");
+    if(btn) updateStarDisplay(Number(btn.dataset.value));
+  });
+  fbStars.addEventListener("mouseleave", () => updateStarDisplay());
+
+  fbName.addEventListener("input", checkFbValid);
+  fbEmail.addEventListener("input", checkFbValid);
+
+  fbSubmit.addEventListener("click", async () => {
+    if(fbRating === 0 || !fbName.value.trim() || !fbEmail.value.trim()) return;
+    fbSubmit.disabled = true;
+    fbSubmit.textContent = "Submitting…";
+    const entry = {
+      name: fbName.value.trim(),
+      email: fbEmail.value.trim(),
+      rating: fbRating,
+      comment: fbText.value.trim(),
+    };
+    try{
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(entry)
+      });
+      if(!res.ok){
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to submit feedback.");
+      }
+      // Show thank-you view
+      fbFormView.style.display = "none";
+      fbThanks.style.display = "block";
+      setTimeout(() => { closeFeedback(); showToast(); }, 1400);
+    }catch(err){
+      alert(err.message);
+      fbSubmit.disabled = false;
+    }finally{
+      fbSubmit.textContent = "Submit Feedback";
+    }
+  });
+
+  function showToast(){
+    fbToast.classList.add("show");
+    setTimeout(() => fbToast.classList.remove("show"), 2800);
+  }
 
   dateLine.textContent = new Date().toLocaleDateString(undefined, { weekday:"long", month:"long", day:"numeric" });
 

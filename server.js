@@ -3,6 +3,7 @@
 const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
+const XLSX = require("xlsx");
 
 loadEnvFile();
 
@@ -11,6 +12,7 @@ const configuredKey = process.env.GEMINI_API_KEY;
 const apiKey = configuredKey && !/^your_gemini_api_key_here$/i.test(configuredKey.trim()) ? configuredKey : "";
 const model = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 const pagePath = path.join(__dirname, "todo.html");
+const feedbackPath = path.join(__dirname, "feedback.xlsx");
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_MESSAGES = 12;
 
@@ -91,6 +93,24 @@ async function askGemini(messages) {
     .trim();
 }
 
+function saveFeedback({ name, email, rating, comment }) {
+  let workbook;
+  const sheetName = "Feedback";
+  if (fs.existsSync(feedbackPath)) {
+    workbook = XLSX.readFile(feedbackPath);
+  } else {
+    workbook = XLSX.utils.book_new();
+    const header = [["Name", "Email", "Rating", "Comment", "Timestamp"]];
+    const sheet = XLSX.utils.aoa_to_sheet(header);
+    sheet["!cols"] = [{ wch: 20 }, { wch: 30 }, { wch: 8 }, { wch: 50 }, { wch: 22 }];
+    XLSX.utils.book_append_sheet(workbook, sheet, sheetName);
+  }
+  const sheet = workbook.Sheets[sheetName];
+  const row = [name, email, rating, comment, new Date().toISOString()];
+  XLSX.utils.sheet_add_aoa(sheet, [row], { origin: -1 });
+  XLSX.writeFile(workbook, feedbackPath);
+}
+
 http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url === "/api/health") {
     return sendJson(res, 200, { configured: Boolean(apiKey) });
@@ -99,6 +119,23 @@ http.createServer(async (req, res) => {
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "X-Content-Type-Options": "nosniff" });
     fs.createReadStream(pagePath).pipe(res);
     return;
+  }
+  if (req.method === "POST" && req.url === "/api/feedback") {
+    try {
+      const payload = await readJson(req);
+      const name = (payload.name || "").trim();
+      const email = (payload.email || "").trim();
+      const rating = Number(payload.rating);
+      const comment = (payload.comment || "").trim();
+      if (!name || name.length > 100) return sendJson(res, 400, { error: "Name is required (max 100 chars)." });
+      if (!email || email.length > 200 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return sendJson(res, 400, { error: "A valid email is required." });
+      if (!rating || rating < 1 || rating > 5) return sendJson(res, 400, { error: "Rating must be 1-5." });
+      if (comment.length > 500) return sendJson(res, 400, { error: "Comment must be under 500 chars." });
+      saveFeedback({ name, email, rating, comment });
+      return sendJson(res, 200, { ok: true });
+    } catch (error) {
+      return sendJson(res, error.status || 400, { error: error.message || "Unable to save feedback." });
+    }
   }
   if (req.method === "POST" && req.url === "/api/chat") {
     try {
