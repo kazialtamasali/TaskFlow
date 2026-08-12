@@ -415,10 +415,17 @@
   fbName.addEventListener("input", checkFbValid);
   fbEmail.addEventListener("input", checkFbValid);
 
+  /* ⚠️ PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BELOW */
+  const SHEET_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
+
   fbSubmit.addEventListener("click", async () => {
     if(fbRating === 0 || !fbName.value.trim() || !fbEmail.value.trim()) return;
+    if(SHEET_URL.includes("YOUR_DEPLOYMENT_ID")){
+      alert("Please set your Google Sheets URL in todo.html (search for SHEET_URL).");
+      return;
+    }
     fbSubmit.disabled = true;
-    fbSubmit.textContent = "Submitting…";
+    fbSubmit.textContent = "Submitting\u2026";
     const entry = {
       name: fbName.value.trim(),
       email: fbEmail.value.trim(),
@@ -426,21 +433,18 @@
       comment: fbText.value.trim(),
     };
     try{
-      const res = await fetch("/api/feedback", {
+      await fetch(SHEET_URL, {
         method: "POST",
+        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(entry)
       });
-      if(!res.ok){
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to submit feedback.");
-      }
-      // Show thank-you view
+      // Show thank-you view (no-cors means we can't read the response, but the data is sent)
       fbFormView.style.display = "none";
       fbThanks.style.display = "block";
       setTimeout(() => { closeFeedback(); showToast(); }, 1400);
     }catch(err){
-      alert(err.message);
+      alert("Could not submit feedback. Please try again.");
       fbSubmit.disabled = false;
     }finally{
       fbSubmit.textContent = "Submit Feedback";
